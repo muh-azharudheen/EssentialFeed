@@ -23,10 +23,3 @@ public struct FeedItem {
 }
 
 extension FeedItem: Equatable { }
-
-extension FeedItem: Decodable {
-    private enum CodingKeys: String, CodingKey {
-        case id, description, location
-        case imageURL = "image"
-    }
-}
