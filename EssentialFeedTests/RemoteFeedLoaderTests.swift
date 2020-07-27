@@ -88,9 +88,18 @@ class RemoteFeedLoaderTests: XCTestCase {
 
 // MARK: Helpers
 private extension RemoteFeedLoaderTests {
-    func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteFeedLoader, client: HTTPClientSpy) {
+    func makeSUT(url: URL = URL(string: "https://a-url.com")!, file: StaticString = #file, line: UInt = #line) -> (sut: RemoteFeedLoader, client: HTTPClientSpy) {
         let client = HTTPClientSpy()
-        return (RemoteFeedLoader(url: url, client: client), client)
+        let sut = RemoteFeedLoader(url: url, client: client)
+        trackForMemmoryLeaks(sut)
+        trackForMemmoryLeaks(client)
+        return (sut, client)
+    }
+    
+    private func trackForMemmoryLeaks(_ instance: AnyObject, file: StaticString = #file, line: UInt = #line) {
+        addTeardownBlock { [weak instance] in
+            XCTAssertNil(instance, "Instance should have been deallocated, Potential memmory leak", file: file, line: line)
+        }
     }
     
     private func makeItem(id: UUID = UUID(), description: String? = nil, location: String? = nil, imageURL: URL) -> (model: FeedItem, json: [String: Any]) {
@@ -144,3 +153,4 @@ private extension RemoteFeedLoaderTests {
         }
     }
 }
+    
