@@ -32,7 +32,7 @@ class RemoteFeedLoaderTests: XCTestCase {
     
     func test_load_deliversErrorOnClientError() {
         let (sut, client) = makeSUT()
-        expect(sut, toCompleteWith: .failure(.connectivity), when: {
+        expect(sut, toCompleteWith: .failure(RemoteFeedLoader.Error.connectivity), when: {
             client.complete(with: NSError(domain: "test", code: 0))
         })
     }
@@ -44,7 +44,7 @@ class RemoteFeedLoaderTests: XCTestCase {
         let samples = [199, 201, 300, 400, 500, 600]
         samples.enumerated().forEach() { item in
             let data = makeItemsJson(items: [])
-            expect(sut, toCompleteWith: .failure(.invalidData), when: {
+            expect(sut, toCompleteWith: .failure(RemoteFeedLoader.Error.invalidData), when: {
                 client.complete(withStatusCode: item.element, data: data, at: item.offset)
             })
         }
@@ -52,7 +52,7 @@ class RemoteFeedLoaderTests: XCTestCase {
     
     func test_load_deliversErrorOnNon200HTTPResponseWithInvalidJson() {
         let (sut, client) = makeSUT()
-        expect(sut, toCompleteWith: .failure(.invalidData), when: {
+        expect(sut, toCompleteWith: .failure(RemoteFeedLoader.Error.invalidData), when: {
             let invalidJson = Data("invalid json".utf8)
             client.complete(withStatusCode: 200, data: invalidJson)
         })
@@ -141,7 +141,7 @@ private extension RemoteFeedLoaderTests {
             switch (receivedResult, expectedResult) {
             case let (.success(receivedItems), .success(expectedItems)):
                 XCTAssertEqual(receivedItems, expectedItems, file: file, line: line)
-            case let (.failure(receivedErrror), .failure(expectedError)):
+            case let (.failure(receivedErrror as RemoteFeedLoader.Error), .failure(expectedError as RemoteFeedLoader.Error)):
                 XCTAssertEqual(receivedErrror, expectedError, file: file, line: line)
             default:
                 XCTFail("Expected Result \(expectedResult) got \(receivedResult) instead", file: file, line: line)
