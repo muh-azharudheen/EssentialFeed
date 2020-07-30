@@ -1,10 +1,5 @@
 //
-//  FeedItemsMapper.swift
-//  EssentialFeed
-//
 //  Created by Muhammed Azharudheen on 27/07/2020.
-//  Copyright © 2020 Nagarro. All rights reserved.
-//
 
 import Foundation
 
