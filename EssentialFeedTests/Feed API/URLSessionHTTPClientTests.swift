@@ -44,7 +44,7 @@ class URLSessionHTTPClientTests: XCTestCase {
             exp.fulfill()
         }
         
-        URLSessionHTTPClient().get(from: url) { _ in }
+        makeSUT().get(from: url) { _ in }
         
         wait(for: [exp], timeout: 1.0)
     }
@@ -54,9 +54,8 @@ class URLSessionHTTPClientTests: XCTestCase {
         let error = NSError(domain: "any error", code: 1)
         URLProtocolStub.stub(data: nil, response: nil, error: error)
         
-        let sut = URLSessionHTTPClient()
         let exp = expectation(description: "Wait for completion")
-        sut.get(from: url) {
+        makeSUT().get(from: url) {
             switch $0 {
             case .failure(let receivedError as NSError):
                 XCTAssertEqual(receivedError, error)
@@ -66,6 +65,10 @@ class URLSessionHTTPClientTests: XCTestCase {
             exp.fulfill()
         }
         wait(for: [exp], timeout: 1)
+    }
+    
+    private func makeSUT() -> URLSessionHTTPClient {
+        return URLSessionHTTPClient()
     }
     
     // MARK: Helpers
