@@ -96,4 +96,5 @@ class EssentialFeedAPIEndToEndTests: XCTestCase {
     private func imageURL(at index: Int) -> URL {
         URL(string: "https://url-\(index+1).com")!
     }
+    
 }
