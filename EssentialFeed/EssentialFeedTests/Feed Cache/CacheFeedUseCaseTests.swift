@@ -32,18 +32,22 @@ class FeedStore {
 class CacheFeedUseCaseTests: XCTestCase {
     
     func test_init_doesNotDeleteCacheUponCreation() {
-        let store = FeedStore()
-        _ = LocalFeedLoader(store: store)
+        let (_, store) = makeSUT()
         XCTAssertEqual(store.deleteCacheFeedCallCount, 0)
     }
     
     func test_save_requestCacheDeletion() {
+        let (sut, store) = makeSUT()
+        let items = [uniqueItem(), uniqueItem()]
+        sut.save(items)
+        XCTAssertEqual(store.deleteCacheFeedCallCount, 1)
+    }
+    
+    // MARK: - Helpers
+    private func makeSUT() -> (sut: LocalFeedLoader, store: FeedStore) {
         let store = FeedStore()
         let sut = LocalFeedLoader(store: store)
-        
-        sut.save([uniqueItem(), uniqueItem()])
-        
-        XCTAssertEqual(store.deleteCacheFeedCallCount, 1)
+        return (sut, store)
     }
     
     private func uniqueItem() -> FeedItem {
@@ -54,4 +58,3 @@ class CacheFeedUseCaseTests: XCTestCase {
         URL(string: "http://any-url.com")!
     }
 }
-
