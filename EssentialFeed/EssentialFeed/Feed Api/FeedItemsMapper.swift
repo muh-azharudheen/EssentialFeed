@@ -3,13 +3,6 @@
 
 import Foundation
 
-internal struct RemoteFeedItem: Decodable {
-    let id: UUID
-    let description: String?
-    let location: String?
-    let image: URL
-}
-
 internal class FeedItemsMapper {
     
     private struct Root: Decodable {
