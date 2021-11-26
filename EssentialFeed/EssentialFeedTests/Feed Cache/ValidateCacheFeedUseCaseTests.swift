@@ -31,6 +31,18 @@ class ValidatedCacheFeedUseCaseTests: XCTestCase {
         XCTAssertEqual(store.receivedMessages, [.retrieve])
     }
     
+    func test_validate_hasNoSideEffectOnLessThanSevenDaysOldCache() {
+        let feed = uniqueImageFeed()
+        let curentDate = Date()
+        let lessThanSevenDaysOldTimeStamp = curentDate.adding(days: -7).adding(seconds: 1)
+        let (sut, store) = makeSUT(currentDate: { curentDate })
+        
+        sut.validateCache()
+        store.completeRetrieval(with: feed.locals, timestamp: lessThanSevenDaysOldTimeStamp)
+
+        XCTAssertEqual(store.receivedMessages, [.retrieve])
+    }
+    
     func test_validate_deltesCacheOnSevenDaysOldCache() {
         let feed = uniqueImageFeed()
         let curentDate = Date()
