@@ -42,16 +42,28 @@ class LoadFeedFromCacheUseCaseTests: XCTestCase {
         })
     }
     
+    func test_load_deliversCachedImagesOnLessThanSevenDaysOldCache() {
+        let feed = uniqueImageFeed()
+        let curentDate = Date()
+        let lessThanSevenDaysOldTimeStamp = curentDate.adding(days: -7).adding(seconds: 1)
+        let (sut, store) = makeSUT(currentDate: { curentDate })
+        
+        expect(sut: sut, toCompleteWith: .success(feed.models)) {
+            store.completeRetrieval(with: feed.locals, timestamp: lessThanSevenDaysOldTimeStamp)
+        }
+    }
+    
     // MARK: - Helpers
-    private func makeSUT(currentDate: Date = Date(), file: StaticString = #file, line: UInt = #line) -> (sut: LocalFeedLoader, store: FeedStoreSpy) {
+    private func makeSUT(currentDate: @escaping (() -> Date) = Date.init, file: StaticString = #file, line: UInt = #line) -> (sut: LocalFeedLoader, store: FeedStoreSpy) {
         let store = FeedStoreSpy()
-        let sut = LocalFeedLoader(store: store, currentDate: { currentDate })
+        let sut = LocalFeedLoader(store: store, currentDate: currentDate)
         trackForMemmoryLeaks(store, file: file, line: line)
         trackForMemmoryLeaks(sut, file: file, line: line)
         return (sut, store)
     }
     
     private func expect(sut: LocalFeedLoader, toCompleteWith expectedResult: LoadFeedResult, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+        let exp = expectation(description: "Waiting for expectation")
         sut.load { receivedResult in
             switch (receivedResult, expectedResult) {
             case (.success(let receivedImages), .success(let expectedImages)):
@@ -61,10 +73,38 @@ class LoadFeedFromCacheUseCaseTests: XCTestCase {
             default:
                 XCTFail("Expected \(expectedResult), got \(receivedResult) instead", file: file, line: line)
             }
+            exp.fulfill()
         }
+        action()
+        wait(for: [exp], timeout: 1)
     }
     
     private func anyNSError() -> NSError {
         NSError(domain: "any error", code: 0)
+    }
+    
+    private func anyURL() -> URL {
+        URL(string: "http://any-url.com")!
+    }
+    
+    private func uniqueImageFeed() -> (models: [FeedImage], locals: [LocalFeedImage]) {
+        let models = [uniqueImage(), uniqueImage()]
+        let locals = models.map { LocalFeedImage(id: $0.id, description: $0.description, location: $0.location, url: $0.url) }
+        return (models, locals)
+    }
+    
+    private func uniqueImage() -> FeedImage {
+        FeedImage(id: UUID(), description: "any", location: "any", url: anyURL())
+    }
+}
+
+private extension Date {
+    
+    func adding(days: Int) -> Date {
+        Calendar(identifier: .gregorian).date(byAdding: .day, value: days, to: self)!
+    }
+    
+    func adding(seconds: TimeInterval) -> Date {
+        self + seconds
     }
 }
