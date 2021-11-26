@@ -60,7 +60,8 @@ public final class LocalFeedLoader {
                 store.deleteCachedFeed {  _ in }
             case let .found(_, timestamp) where !self.validates(timestamp: timestamp):
                 store.deleteCachedFeed {  _ in }
-            default: break
+            case .empty, .found:
+                break
             }
         }
     }
