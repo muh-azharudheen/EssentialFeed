@@ -10,11 +10,13 @@ import Foundation
 
 private final class FeedCachePolicy {
     
-    private let calendar = Calendar(identifier: .gregorian)
-        
-    private var maxCacheAgeInDays: Int { 7 }
+    private init() {}
     
-    func validates(timestamp: Date, againist date: Date) -> Bool {
+    static private let calendar = Calendar(identifier: .gregorian)
+        
+    private static var maxCacheAgeInDays: Int { 7 }
+    
+    static func validates(timestamp: Date, againist date: Date) -> Bool {
         guard let maxCacheAge = calendar.date(byAdding: .day, value: maxCacheAgeInDays, to: timestamp) else { return false }
         return date < maxCacheAge
     }
@@ -25,7 +27,6 @@ public final class LocalFeedLoader {
     private let store: FeedStore
     private let currentDate: () -> Date
     private let calendar = Calendar(identifier: .gregorian)
-    private let cachePolicy = FeedCachePolicy()
     
     public init(store: FeedStore, currentDate: @escaping () -> Date) {
         self.store = store
@@ -66,7 +67,7 @@ extension LocalFeedLoader: FeedLoader {
             switch result {
             case let .failure(error):
                 completion(.failure(error))
-            case let .found(feed, timestamp) where self.cachePolicy.validates(timestamp: timestamp, againist: self.currentDate()):
+            case let .found(feed, timestamp) where FeedCachePolicy.validates(timestamp: timestamp, againist: self.currentDate()):
                 completion(.success(feed.toModels()))
             case .found, .empty:
                 completion(.success([]))
@@ -83,7 +84,7 @@ extension LocalFeedLoader {
             switch result {
             case .failure:
                 self.store.deleteCachedFeed {  _ in }
-            case let .found(_, timestamp) where !self.cachePolicy.validates(timestamp: timestamp, againist: self.currentDate()):
+            case let .found(_, timestamp) where !FeedCachePolicy.validates(timestamp: timestamp, againist: self.currentDate()):
                 self.store.deleteCachedFeed {  _ in }
             case .empty, .found:
                 break
