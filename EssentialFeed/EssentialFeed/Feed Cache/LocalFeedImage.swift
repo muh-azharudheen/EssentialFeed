@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct LocalFeedImage {
+public struct LocalFeedImage: Codable {
     public let id: UUID
     public let description: String?
     public let location: String?
