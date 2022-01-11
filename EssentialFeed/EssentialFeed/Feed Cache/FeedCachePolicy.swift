@@ -8,7 +8,7 @@
 
 import Foundation
 
-internal final class FeedCachePolicy {
+final class FeedCachePolicy {
     
     private init() {}
     
