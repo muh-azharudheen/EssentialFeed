@@ -39,7 +39,7 @@ class EssentialFeedAPIEndToEndTests: XCTestCase {
         trackForMemmoryLeaks(loader, file: file, line: line)
         
         let exp = expectation(description: "wait for completion")
-        var receivedData: LoadFeedResult?
+        var receivedData: FeedLoader.Result?
         loader.load { result in
             receivedData = result
             exp.fulfill()
